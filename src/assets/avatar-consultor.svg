@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-labelledby="t">
+  <title id="t">Consultor de Diagnóstico de Studio-IA</title>
+  <defs>
+    <linearGradient id="fondo" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1E3A6E"/>
+      <stop offset="1" stop-color="#14203A"/>
+    </linearGradient>
+    <clipPath id="circulo"><circle cx="120" cy="120" r="116"/></clipPath>
+  </defs>
+
+  <!-- Fondo -->
+  <circle cx="120" cy="120" r="116" fill="url(#fondo)"/>
+  <g clip-path="url(#circulo)">
+    <!-- Cuadrícula sutil de datos -->
+    <g stroke="#2F5BDB" stroke-opacity=".28" stroke-width="1">
+      <path d="M0 60H240M0 100H240M0 140H240M60 0V240M100 0V240M140 0V240M180 0V240"/>
+    </g>
+    <!-- Barras doradas (eco del logo) -->
+    <g fill="#D4961A" opacity=".9">
+      <rect x="176" y="52" width="9" height="26" rx="2"/>
+      <rect x="189" y="40" width="9" height="38" rx="2"/>
+      <rect x="202" y="28" width="9" height="50" rx="2"/>
+    </g>
+
+    <!-- Cuerpo: saco azul, camisa y corbata -->
+    <path d="M38 240c4-46 34-70 82-70s78 24 82 70z" fill="#1E3A6E"/>
+    <path d="M120 170l-26 6 18 64h16l18-64z" fill="#F6F7FA"/>
+    <path d="M120 180l-8 8 5 40 3 8 3-8 5-40z" fill="#D4961A"/>
+    <path d="M112 188h16l-8-8z" fill="#7A5208"/>
+    <path d="M94 176l26 64-36-52z M146 176l-26 64 36-52z" fill="#14203A" opacity=".55"/>
+    <!-- Insignia de solapa -->
+    <circle cx="160" cy="204" r="7" fill="#F4C766"/>
+    <path d="M157 204l2.2 2.2 4-4.4" stroke="#14203A" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <!-- Cuello -->
+    <path d="M106 150h28v24c-8 6-20 6-28 0z" fill="#B97D5B"/>
+
+    <!-- Cabeza -->
+    <ellipse cx="120" cy="112" rx="38" ry="44" fill="#C98E6B"/>
+    <ellipse cx="82" cy="116" rx="7" ry="10" fill="#B97D5B"/>
+    <ellipse cx="158" cy="116" rx="7" ry="10" fill="#B97D5B"/>
+    <!-- Cabello -->
+    <path d="M82 104c-4-30 14-48 40-48 26 0 42 16 38 44-6-14-18-22-34-22-16 0-30 8-44 26z" fill="#2B2730"/>
+    <path d="M118 62c10-6 26-4 34 6-12-4-24-4-34-6z" fill="#3A3540"/>
+    <!-- Cejas -->
+    <path d="M98 100q8-5 16 0M126 100q8-5 16 0" stroke="#2B2730" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    <!-- Gafas -->
+    <g stroke="#14203A" stroke-width="3" fill="#E7EDFD" fill-opacity=".35">
+      <rect x="94" y="106" width="23" height="17" rx="6"/>
+      <rect x="123" y="106" width="23" height="17" rx="6"/>
+      <path d="M117 113h6" fill="none"/>
+    </g>
+    <!-- Ojos -->
+    <circle cx="106" cy="115" r="3" fill="#14203A"/>
+    <circle cx="134" cy="115" r="3" fill="#14203A"/>
+    <!-- Nariz y sonrisa -->
+    <path d="M120 120q-3 9 2 11" stroke="#9E6A4C" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <path d="M106 138q14 11 28 0" stroke="#7A3E2E" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+
+    <!-- Tablet con diagnóstico -->
+    <g transform="rotate(-8 64 196)">
+      <rect x="40" y="168" width="52" height="64" rx="7" fill="#F6F7FA" stroke="#D4961A" stroke-width="3"/>
+      <rect x="48" y="178" width="36" height="5" rx="2.5" fill="#2F5BDB"/>
+      <rect x="48" y="188" width="26" height="4" rx="2" fill="#5B677F"/>
+      <rect x="49" y="210" width="6" height="12" rx="1.5" fill="#D4961A"/>
+      <rect x="58" y="204" width="6" height="18" rx="1.5" fill="#D4961A"/>
+      <rect x="67" y="198" width="6" height="24" rx="1.5" fill="#2F5BDB"/>
+      <rect x="76" y="202" width="6" height="20" rx="1.5" fill="#2F5BDB"/>
+    </g>
+  </g>
+  <!-- Aro -->
+  <circle cx="120" cy="120" r="116" fill="none" stroke="#D4961A" stroke-width="6"/>
+  <!-- Engranaje (automatización) -->
+  <g transform="translate(196 188)">
+    <circle r="24" fill="#D4961A" stroke="#14203A" stroke-width="3"/>
+    <path fill="#14203A" d="M-3-15h6l1 5 4 2 4-3 4 4-3 4 2 4 5 1v6l-5 1-2 4 3 4-4 4-4-3-4 2-1 5h-6l-1-5-4-2-4 3-4-4 3-4-2-4-5-1v-6l5-1 2-4-3-4 4-4 4 3 4-2z"/>
+    <circle r="5" fill="#D4961A"/>
+  </g>
+</svg>
