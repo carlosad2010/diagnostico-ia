@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calcularDiagnostico, cuadrante, validarCoherencia } from "../lib/calculos.js";
+import { calcularDiagnostico, cuadrante, validarCoherencia, vecesPorMes } from "../lib/calculos.js";
 import { DiagnosticoSchema, esquemaGemini } from "../lib/esquema.js";
 import { DIAGNOSTICO_EJEMPLO } from "../lib/ejemplo.js";
 
@@ -31,6 +31,30 @@ describe("cálculos del diagnóstico", () => {
     malo.oportunidades[0].tarea_id = "T9";
     malo.tareas[1].minutos_despues = 99;
     expect(validarCoherencia(malo)).toHaveLength(2);
+  });
+  it("convierte la frecuencia a veces por mes en el código", () => {
+    const base = { minutos_por_vez: 6, minutos_despues: 2, personas: 1 };
+    expect(vecesPorMes({ ...base, frecuencia: { veces: 40, periodo: "dia" } })).toBe(800);
+    expect(vecesPorMes({ ...base, frecuencia: { veces: 1, periodo: "semana" } })).toBe(4);
+    expect(vecesPorMes({ ...base, frecuencia: { veces: 2, periodo: "quincena" } })).toBe(4);
+    expect(vecesPorMes({ ...base, frecuencia: { veces: 2, periodo: "anio" } })).toBeCloseTo(1 / 6);
+    // Diagnósticos guardados antes del cambio traen veces_por_mes
+    expect(vecesPorMes({ ...base, veces_por_mes: 120 })).toBe(120);
+    const t1 = calcularDiagnostico(DIAGNOSTICO_EJEMPLO).tareas[0];
+    expect(t1.veces_por_mes).toBe(120);
+  });
+  it("exige al menos 3 oportunidades, cada una sobre una tarea distinta", () => {
+    const pocas = structuredClone(DIAGNOSTICO_EJEMPLO);
+    pocas.oportunidades = pocas.oportunidades.slice(0, 2);
+    expect(validarCoherencia(pocas)).toEqual([expect.stringContaining("al menos 3 oportunidades")]);
+    const repetidas = structuredClone(DIAGNOSTICO_EJEMPLO);
+    repetidas.oportunidades[2].tarea_id = "T1";
+    expect(validarCoherencia(repetidas)).toEqual(["Cada oportunidad debe apuntar a una tarea distinta."]);
+    // Con menos de 3 tareas basta una oportunidad por tarea
+    const chico = structuredClone(DIAGNOSTICO_EJEMPLO);
+    chico.tareas = chico.tareas.slice(0, 1);
+    chico.oportunidades = chico.oportunidades.slice(0, 1);
+    expect(validarCoherencia(chico)).toEqual([]);
   });
   it("sin costo hora no hay dinero", () => {
     expect(calcularDiagnostico({ ...DIAGNOSTICO_EJEMPLO, costo_hora: null }).totales.valor_anual_esperado).toBeNull();

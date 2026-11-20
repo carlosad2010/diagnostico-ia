@@ -10,6 +10,7 @@ const estado = {
   mensajes: [], // { rol, texto, creado }
   diagnosticoUrl: null,
   errorDiagnostico: null,
+  cerrada: false, // terminó sin diagnóstico (mensajes fuera de tema)
   cargando: false,
   cerrando: false,
 };
@@ -97,11 +98,15 @@ function renderPie(error) {
   if (!pie) return;
   const alerta = error ? h("p", { class: "form-error", role: "alert", text: error }) : null;
 
-  if (estado.diagnosticoUrl) {
+  if (estado.diagnosticoUrl || estado.cerrada) {
     pie.replaceChildren(
       h("div", { class: "chat-acciones" },
-        h("span", { text: "La entrevista terminó. Si configuraste el correo, también te llegó el enlace." }),
-        h("button", { type: "button", class: "btn btn--sec", text: "Hacer otro diagnóstico", onclick: nuevo }),
+        h("span", {
+          text: estado.cerrada
+            ? "La conversación terminó sin diagnóstico."
+            : "La entrevista terminó. Si configuraste el correo, también te llegó el enlace.",
+        }),
+        h("button", { type: "button", class: "btn btn--sec", text: estado.cerrada ? "Empezar un diagnóstico" : "Hacer otro diagnóstico", onclick: nuevo }),
       ),
     );
     return;
@@ -109,7 +114,7 @@ function renderPie(error) {
 
   const input = h("textarea", {
     id: "message-input", class: "chat-input form-control", rows: 2, maxlength: 3000, "aria-label": "Tu respuesta",
-    placeholder: "Escribe tu respuesta… (Enter envía, Shift+Enter hace un salto de línea)",
+    placeholder: "Cuéntalo con tus palabras y con todo el detalle que puedas…",
     disabled: estado.cargando,
   });
   const enviar = h("button", { type: "submit", id: "send-button", class: "btn chat-send", disabled: estado.cargando, text: "Enviar" });
@@ -127,7 +132,7 @@ function renderPie(error) {
   });
 
   const respuestas = estado.mensajes.filter((m) => m.rol === "user").length;
-  const acciones = h("div", { class: "chat-acciones" }, h("span", { text: `Respuestas: ${respuestas}. Lo ideal son 8-15 para un buen diagnóstico.` }));
+  const acciones = h("div", { class: "chat-acciones" }, h("span", { text: `Respuestas: ${respuestas}. Entre más detalle, mejor tu diagnóstico (lo ideal son 8-15 respuestas).` }));
   if (estado.errorDiagnostico) {
     acciones.append(h("button", { type: "button", class: "btn", disabled: estado.cargando, text: "Reintentar diagnóstico", onclick: () => mandar(MENSAJE_CIERRE, true) }));
   } else if (respuestas >= 3) {
@@ -166,6 +171,7 @@ async function mandar(texto, cerrar = false) {
     if (d.respuesta && !(reintento && d.errorDiagnostico)) estado.mensajes.push({ rol: "assistant", texto: d.respuesta, creado: Date.now() });
     estado.diagnosticoUrl = d.diagnosticoUrl;
     estado.errorDiagnostico = d.errorDiagnostico;
+    estado.cerrada = Boolean(d.cerrada);
     if (d.errorDiagnostico) error = d.errorDiagnostico;
   } catch (e) {
     console.error(e);
@@ -188,11 +194,12 @@ async function cargar() {
   const d = await r.json();
   estado.mensajes = d.mensajes.map((m) => ({ ...m, creado: m.creado ? new Date(m.creado).getTime() : Date.now() }));
   estado.diagnosticoUrl = d.diagnosticoUrl;
+  estado.cerrada = d.estado === "cerrado";
 }
 
 function nuevo() {
   localStorage.removeItem(CLAVE_SESION);
-  Object.assign(estado, { sesionId: null, mensajes: [], diagnosticoUrl: null, errorDiagnostico: null });
+  Object.assign(estado, { sesionId: null, mensajes: [], diagnosticoUrl: null, errorDiagnostico: null, cerrada: false });
   navigateTo("/inicio");
 }
 
@@ -209,7 +216,7 @@ export async function initChat() {
   if (!id) return navigateTo("/inicio");
 
   if (estado.sesionId !== id) {
-    Object.assign(estado, { sesionId: id, mensajes: [], diagnosticoUrl: null, errorDiagnostico: null });
+    Object.assign(estado, { sesionId: id, mensajes: [], diagnosticoUrl: null, errorDiagnostico: null, cerrada: false });
     estado.cargando = true;
     renderMensajes();
     try {

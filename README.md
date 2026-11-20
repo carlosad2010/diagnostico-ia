@@ -37,8 +37,11 @@ Informe ──► /diagnostico/:id ──► GET /api/diagnostico ──► vist
 
 **Decisiones clave**
 
-- **Dos prompts.** Uno para conversar (corto, cálido, de 1 a 3 preguntas por turno) y otro para analizar (reglas del filtro de decisión y de la calificación). Cada uno hace mejor su trabajo por separado.
-- **El modelo no hace las cuentas.** Gemini entrega minutos, frecuencias y notas de 1 a 5; las horas, los cuadrantes y el dinero se calculan en `lib/calculos.js`, así las cifras siempre cuadran.
+- **Dos prompts.** Uno para conversar y otro para analizar (reglas del filtro de decisión y de la calificación). Cada uno hace mejor su trabajo por separado.
+- **Preguntas abiertas.** El consultor hace una sola pregunta por mensaje, sin opciones ni listas, con ejemplos dentro de la frase, y pide que la persona responda con sus palabras y con el mayor detalle posible.
+- **Solo diagnóstico.** Si un mensaje no tiene que ver con el trabajo de la persona, el consultor le recuerda su función y no responde lo que le piden. El modelo marca esos mensajes y el servidor los cuenta: al tercero cierra la conversación sin diagnóstico (estado `cerrado`), con una despedida fija.
+- **El modelo no hace las cuentas.** Gemini entrega minutos, notas de 1 a 5 y la frecuencia tal como la dijo la persona ("40 al día", "1 por semana"); la conversión a veces por mes, las horas, los cuadrantes y el dinero se calculan en `lib/calculos.js`, así las cifras siempre cuadran.
+- **Mínimo de oportunidades.** La validación de coherencia exige al menos 3 oportunidades (o una por tarea si hay menos de 3), cada una sobre una tarea distinta; si no se cumple, se le pide a Gemini que corrija.
 - **El historial vive en el servidor.** El navegador solo envía el mensaje nuevo, así que nadie puede inventar respuestas del consultor ni gastar la key para otros fines.
 - **Salida JSON con respaldo.** Primero se pide JSON con esquema (`responseFormat`). Si la API rechaza ese formato (400), se prueba `responseJsonSchema` y, por último, JSON sin esquema, describiendo el esquema en el prompt. Siempre se valida con Zod.
 - **Seguridad heredada de SpiderChat:**
@@ -75,6 +78,7 @@ Informe ──► /diagnostico/:id ──► GET /api/diagnostico ──► vist
 │   ├── dom.js (creación segura de elementos) · utils.js (funciones puras) · theme.js
 │   └── assets/ avatar-consultor.svg · logo-claro.png · logo-oscuro.png
 ├── database/schema.sql       # Tablas sesiones, mensajes, diagnosticos y vista_leads
+├── database/migracion-*.sql  # Cambios para bases ya creadas (idempotentes)
 ├── scripts/dev-server.js     # Servidor local sin la CLI de Vercel
 ├── tests/                    # Vitest: 27 pruebas, sin llamar a Gemini de verdad
 └── vercel.json
@@ -106,6 +110,14 @@ psql -U postgres -d diagnostico_ia -f database/schema.sql
 
 Luego pon `DATABASE_URL` en `.env`. Sin `DATABASE_URL`, en local los datos se guardan en memoria y se pierden al reiniciar. `vercel dev` también funciona.
 
+Si tu base se creó con una versión anterior de `schema.sql`, ejecuta también las migraciones (se pueden repetir sin problema):
+
+```bash
+psql -U postgres -d diagnostico_ia -f database/migracion-01-fuera-de-tema.sql
+```
+
+En modo simulado, los mensajes con "receta", "fútbol", "chiste" o "poema" cuentan como fuera de tema, para probar el cierre.
+
 ### Retomar la conversación
 
 Al registrarse, si el SMTP está configurado, la persona recibe un correo con un enlace personal `/retomar/<id>`. Al abrirlo, el navegador guarda esa sesión y continúa el chat donde quedó, también desde otro dispositivo. Sin SMTP, la sesión solo se retoma en el mismo navegador.
@@ -116,19 +128,22 @@ Al registrarse, si el SMTP está configurado, la persona recibe un correo con un
 npm test
 ```
 
-27 pruebas en 4 archivos:
+34 pruebas en 4 archivos:
 
 - `utils.test.js`: funciones puras del navegador; el texto de consentimiento es igual en el navegador y en el servidor; el HTML no se interpreta.
 - `calculos.test.js`:
   - horas, dinero, cuadrantes, orden de oportunidades y coherencia;
+  - conversión de la frecuencia a veces por mes y mínimo de oportunidades;
   - el esquema para Gemini no trae palabras clave no soportadas.
 - `gemini.test.js`, con `fetch` simulado:
   - la key va en el header;
   - se propaga el 429;
   - se cambia de formato ante un 400;
-  - se pide corrección si el JSON no cumple el esquema.
+  - se pide corrección si el JSON no cumple el esquema;
+  - se detecta la marca de fuera de tema y el modelo recibe los avisos dados.
 - `api.test.js`:
   - recorrido completo registro → entrevista → diagnóstico → informe;
+  - tres mensajes fuera de tema cierran la conversación sin diagnóstico;
   - errores 400, 405, 409 y 404;
   - el informe no expone el correo.
 
@@ -137,7 +152,8 @@ npm test
 1. **Neon (PostgreSQL):**
    - crea un proyecto en [neon.tech](https://neon.com) (o instala Neon desde Vercel → Marketplace, que define `DATABASE_URL` por ti);
    - copia la cadena de conexión **pooled** (host con `-pooler`, termina en `?sslmode=require`);
-   - ejecuta `database/schema.sql` en el SQL Editor de Neon, o con `psql "<cadena>" -f database/schema.sql`.
+   - ejecuta `database/schema.sql` en el SQL Editor de Neon, o con `psql "<cadena>" -f database/schema.sql`;
+   - si la base ya existía, ejecuta también `database/migracion-01-fuera-de-tema.sql` **antes** de desplegar el código nuevo.
 2. **Vercel:** sube el repo a GitHub e impórtalo (Framework Preset: **Other**).
 3. **Variables de entorno:**
    - obligatorias: `GEMINI_API_KEY`, `DATABASE_URL` (la de Neon) y `APP_URL` (el dominio de Vercel, sin `/` final);

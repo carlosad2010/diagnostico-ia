@@ -14,8 +14,9 @@ create table if not exists public.sesiones (
   empresa text,
   consentimiento boolean not null,
   consentimiento_texto text not null,
-  estado text not null default 'en_curso' check (estado in ('en_curso', 'completado')),
+  estado text not null default 'en_curso' check (estado in ('en_curso', 'completado', 'cerrado')),
   turnos integer not null default 0,
+  fuera_de_tema integer not null default 0, -- avisos por mensajes fuera de tema; al 3.º la sesión pasa a 'cerrado'
   diagnostico_id uuid
 );
 
@@ -46,7 +47,8 @@ alter table public.diagnosticos enable row level security;
 -- Vista para revisar los contactos (select * from vista_leads).
 create or replace view public.vista_leads with (security_invoker = true) as
 select s.creado, s.nombre, s.email, s.empresa, s.estado, s.turnos,
-       d.cargo, d.industria, d.horas_mes_liberadas, d.valor_anual_esperado, d.id as diagnostico_id
+       d.cargo, d.industria, d.horas_mes_liberadas, d.valor_anual_esperado, d.id as diagnostico_id,
+       s.fuera_de_tema
 from public.sesiones s
 left join public.diagnosticos d on d.id = s.diagnostico_id
 order by s.creado desc;

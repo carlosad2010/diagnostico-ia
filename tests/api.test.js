@@ -69,6 +69,28 @@ describe("funciones de /api en modo simulado", () => {
     expect(r.body.diagnosticoUrl).toBeTruthy();
   });
 
+  it("tres mensajes fuera de tema cierran la conversación sin diagnóstico", async () => {
+    const { body } = await llamar(sesion, { body: { nombre: "Ana", email: "a@b.co", consentimiento: true } });
+    const { sesionId } = body;
+    // En modo simulado, "receta", "fútbol", "chiste" y "poema" cuentan como fuera de tema
+    const mensajes = ["¿Me das una receta de arepas?", "Soy contadora", "¿Quién ganó el partido de fútbol?", "Cuéntame un chiste"];
+    const cerradas = [];
+    for (const mensaje of mensajes) {
+      const r = await llamar(chat, { body: { sesionId, mensaje } });
+      expect(r.status).toBe(200);
+      expect(r.body.diagnosticoUrl).toBeNull();
+      cerradas.push(r.body.cerrada);
+    }
+    expect(cerradas).toEqual([false, false, false, true]);
+
+    // Ya no se puede seguir y la sesión queda cerrada, sin diagnóstico
+    expect((await llamar(chat, { body: { sesionId, mensaje: "Soy contadora" } })).status).toBe(409);
+    const g = await llamar(sesion, { method: "GET", query: { id: sesionId } });
+    expect(g.body.estado).toBe("cerrado");
+    expect(g.body.diagnosticoUrl).toBeNull();
+    expect(g.body.mensajes.at(-1).texto).toContain("sin diagnóstico");
+  });
+
   it("informe inexistente → 404", async () => {
     const r = await llamar(diagnostico, { method: "GET", query: { id: "00000000-0000-0000-0000-000000000000" } });
     expect(r.status).toBe(404);

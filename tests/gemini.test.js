@@ -25,8 +25,14 @@ describe("funciones puras", () => {
     expect(getReplyText(await respuesta("hola").json())).toBe("hola");
   });
   it("separarCierre detecta y quita la marca", () => {
-    expect(separarCierre("Listo, preparo tu diagnóstico.\n[[DIAGNOSTICO]]")).toEqual({ texto: "Listo, preparo tu diagnóstico.", cerrar: true });
+    expect(separarCierre("Listo, preparo tu diagnóstico.\n[[DIAGNOSTICO]]")).toEqual({ texto: "Listo, preparo tu diagnóstico.", cerrar: true, fueraDeTema: false });
     expect(separarCierre("Sigamos").cerrar).toBe(false);
+  });
+  it("separarCierre detecta la marca de fuera de tema, aunque venga mal escrita", () => {
+    expect(separarCierre("Mi función es tu diagnóstico.\n[[FUERA_DE_TEMA]]")).toEqual({ texto: "Mi función es tu diagnóstico.", cerrar: false, fueraDeTema: true });
+    expect(separarCierre("Volvamos al tema. [[ fuera de tema ]]").fueraDeTema).toBe(true);
+    // Si vienen las dos marcas, gana fuera de tema: nunca se genera diagnóstico en ese turno
+    expect(separarCierre("x\n[[FUERA_DE_TEMA]]\n[[DIAGNOSTICO]]")).toEqual({ texto: "x", cerrar: false, fueraDeTema: true });
   });
   it("extraerJson tolera bloques ```json y texto alrededor", () => {
     expect(extraerJson('```json\n{"a":1}\n```')).toEqual({ a: 1 });
@@ -48,11 +54,21 @@ describe("llamadas a Gemini (fetch simulado)", () => {
     const fetchMock = vi.fn().mockResolvedValue(respuesta("¿Cuál es tu cargo?"));
     vi.stubGlobal("fetch", fetchMock);
     const r = await conversar([{ rol: "user", texto: "Hola" }]);
-    expect(r).toEqual({ texto: "¿Cuál es tu cargo?", cerrar: false });
+    expect(r).toEqual({ texto: "¿Cuál es tu cargo?", cerrar: false, fueraDeTema: false });
     const [url, opciones] = fetchMock.mock.calls[0];
     expect(url).not.toContain("clave-secreta");
     expect(opciones.headers["x-goog-api-key"]).toBe("clave-secreta");
     expect(JSON.parse(opciones.body).systemInstruction.parts[0].text).toContain("Consultor de Diagnóstico");
+  });
+
+  it("conversar le informa al modelo los avisos por mensajes fuera de tema", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(respuesta("Sigamos"));
+    vi.stubGlobal("fetch", fetchMock);
+    await conversar([{ rol: "user", texto: "Hola" }]);
+    await conversar([{ rol: "user", texto: "Hola" }], { avisos: 1 });
+    const instruccion = (i) => JSON.parse(fetchMock.mock.calls[i][1].body).systemInstruction.parts[0].text;
+    expect(instruccion(0)).toContain("Aún no has dado avisos");
+    expect(instruccion(1)).toContain("último aviso");
   });
 
   it("conversar propaga el 429 para avisar de la cuota", async () => {

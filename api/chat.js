@@ -16,6 +16,9 @@ export default async function handler(req, res) {
   try {
     const sesion = await store().obtenerSesion(sesionId);
     if (!sesion) return res.status(404).json({ error: "Sesión no encontrada." });
+    if (sesion.estado === "cerrado") {
+      return res.status(409).json({ error: "Esta conversación terminó sin diagnóstico. Puedes empezar uno nuevo desde el inicio." });
+    }
     if (sesion.estado === "completado") {
       return res.status(409).json({ error: "Este diagnóstico ya terminó. Puedes ver el informe con el botón." });
     }
@@ -28,6 +31,7 @@ export default async function handler(req, res) {
       respuesta: r.respuesta,
       diagnosticoUrl: r.diagnosticoId ? `${base}/diagnostico/${r.diagnosticoId}` : null,
       errorDiagnostico: r.errorDiagnostico ?? null,
+      cerrada: r.cerrada ?? false,
     });
   } catch (error) {
     return responderError(res, error, "chat");
