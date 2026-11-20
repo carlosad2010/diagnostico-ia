@@ -23,7 +23,7 @@ const CHECK_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 export function chatView() {
   return `
     <header class="app-header">
-      <img class="app-header__avatar" src="/assets/avatar-consultor.svg" alt="" width="52" height="52" />
+      <span class="app-header__avatar" aria-hidden="true">IA</span>
       <div>
         <h1 class="app-title">Consultor de Diagnóstico</h1>
         <p class="app-subtitle"><span class="status-dot"></span>En línea · Studio-IA</p>
@@ -42,7 +42,7 @@ function crearMensaje(m) {
   const pie = h("div", { class: "message__meta" }, h("time", { class: "message__time", datetime: new Date(m.creado).toISOString(), text: formatTime(m.creado) }));
   if (m.rol !== "user") pie.append(botonCopiar(textoPlano(m.texto)));
   return h("div", { class: `message ${roleClass}` },
-    m.rol !== "user" ? h("img", { class: "message__avatar", src: "/assets/avatar-consultor.svg", alt: "" }) : null,
+    m.rol !== "user" ? h("span", { class: "message__avatar", "aria-hidden": "true", text: "IA" }) : null,
     h("div", { class: "message__burbuja" }, h("span", { class: "message__author", text: author }), cuerpo, pie),
   );
 }
@@ -108,11 +108,11 @@ function renderPie(error) {
   }
 
   const input = h("textarea", {
-    id: "message-input", class: "chat-input", rows: 2, maxlength: 3000, "aria-label": "Tu respuesta",
+    id: "message-input", class: "chat-input form-control", rows: 2, maxlength: 3000, "aria-label": "Tu respuesta",
     placeholder: "Escribe tu respuesta… (Enter envía, Shift+Enter hace un salto de línea)",
     disabled: estado.cargando,
   });
-  const enviar = h("button", { type: "submit", id: "send-button", class: "chat-send", disabled: estado.cargando, text: "Enviar" });
+  const enviar = h("button", { type: "submit", id: "send-button", class: "btn chat-send", disabled: estado.cargando, text: "Enviar" });
   const form = h("form", { class: "input-area", id: "chat-form" }, input, enviar);
   input.addEventListener("keydown", (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -131,7 +131,7 @@ function renderPie(error) {
   if (estado.errorDiagnostico) {
     acciones.append(h("button", { type: "button", class: "btn", disabled: estado.cargando, text: "Reintentar diagnóstico", onclick: () => mandar(MENSAJE_CIERRE, true) }));
   } else if (respuestas >= 3) {
-    acciones.append(h("button", { type: "button", class: "enlace", disabled: estado.cargando, text: "Ya tengo prisa: entrégame el diagnóstico", onclick: () => mandar(MENSAJE_CIERRE, true) }));
+    acciones.append(h("button", { type: "button", class: "btn btn-link enlace", disabled: estado.cargando, text: "Ya tengo prisa: entrégame el diagnóstico", onclick: () => mandar(MENSAJE_CIERRE, true) }));
   }
   pie.replaceChildren(...[alerta, form, acciones].filter(Boolean));
   if (!estado.cargando) input.focus({ preventScroll: true });

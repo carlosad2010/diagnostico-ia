@@ -76,7 +76,6 @@ function construir({ persona, datos: d, calculos, creado }) {
         h("p", { text: `${d.contexto.cargo} · ${d.contexto.area} · ${d.contexto.industria} · ${fecha}` }),
       ),
       h("div", { class: "portadilla__lado" },
-        h("img", { src: "/assets/avatar-consultor.svg", alt: "", class: "portadilla__avatar", width: 120, height: 120 }),
         h("button", { type: "button", class: "btn no-imprimir", text: "Descargar PDF", onclick: () => window.print() }),
       ),
     ),

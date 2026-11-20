@@ -9,11 +9,8 @@ import { CLAVE_SESION, TEXTO_CONSENTIMIENTO } from "./utils.js";
 // =====================================================
 function inicioView() {
   return `
-    <section class="home">
-      <div class="home__media">
-        <img class="home__avatar" src="/assets/avatar-consultor.svg" alt="Ilustración del Consultor de Diagnóstico de Studio-IA" width="280" height="280" />
-      </div>
-      <div class="home__content">
+    <section class="home row align-items-center g-4 g-lg-5">
+      <div class="col-lg-6">
         <p class="kicker">Consultoría Studio-IA · 15 minutos</p>
         <h1 class="home__title">Descubre qué puedes automatizar en tu trabajo</h1>
         <p class="home__intro">
@@ -25,6 +22,8 @@ function inicioView() {
           <li class="trait">Primero procesos, luego IA</li>
           <li class="trait">Plan de 30-60-90 días</li>
         </ul>
+      </div>
+      <div class="col-lg-5 offset-lg-1">
         <div id="inicio-accion"></div>
       </div>
     </section>`;
@@ -69,7 +68,8 @@ function initInicio() {
   }
   if (sesion) {
     zona.append(
-      h("div", { class: "home__cta" },
+      h("div", { class: "registro d-grid gap-2" },
+        h("h2", { class: "registro__titulo", text: "Tienes un diagnóstico en curso" }),
         h("a", { href: "/chat", class: "btn", "data-link": true, text: "Continuar mi diagnóstico" }),
         h("button", { type: "button", class: "btn btn--sec", text: "Empezar uno nuevo", onclick: () => {
           localStorage.removeItem(CLAVE_SESION);
@@ -84,13 +84,14 @@ function initInicio() {
 
 function formularioRegistro() {
   const error = h("p", { class: "form-error", role: "alert", hidden: true });
-  const boton = h("button", { type: "submit", class: "btn btn--full", disabled: true, text: "Comenzar diagnóstico" });
-  const check = h("input", { type: "checkbox", id: "consent", required: true, onchange: (e) => (boton.disabled = !e.target.checked) });
+  const boton = h("button", { type: "submit", class: "btn btn--full btn-lg", disabled: true, text: "Comenzar diagnóstico" });
+  const check = h("input", { type: "checkbox", id: "consent", class: "form-check-input", required: true, onchange: (e) => (boton.disabled = !e.target.checked) });
 
   const campo = (id, etiqueta, attrs) =>
-    h("div", { class: "campo" }, h("label", { for: id, text: etiqueta }), h("input", { id, name: id, ...attrs }));
+    h("div", { class: "campo" }, h("label", { for: id, text: etiqueta }), h("input", { id, name: id, class: "form-control", ...attrs }));
 
   const form = h("form", { class: "registro", novalidate: false },
+    h("h2", { class: "registro__titulo", text: "Empieza tu diagnóstico" }),
     campo("nombre", "Nombre", { required: true, minlength: 2, maxlength: 80, autocomplete: "given-name" }),
     campo("email", "Correo (ahí te enviamos el informe)", { type: "email", required: true, maxlength: 120, autocomplete: "email" }),
     campo("empresa", "Empresa (opcional)", { maxlength: 120, autocomplete: "organization" }),

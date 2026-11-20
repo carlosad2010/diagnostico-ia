@@ -23,6 +23,7 @@ export function initThemeToggle() {
   button.addEventListener("click", () => {
     const theme = getTheme() === "dark" ? "light" : "dark";
     document.documentElement.dataset.theme = theme;
+    document.documentElement.dataset.bsTheme = theme; // para los componentes de Bootstrap
     updateToggleLabel(button);
 
     // recordar la elección (puede fallar en modo privado: no pasa nada)
