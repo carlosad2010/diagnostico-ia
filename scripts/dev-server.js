@@ -20,7 +20,7 @@ const TIPOS = {
   ".png": "image/png",
   ".json": "application/json",
 };
-const FUNCIONES = new Set(["sesion", "chat", "diagnostico"]);
+const FUNCIONES = new Set(["sesion", "chat", "diagnostico", "admin"]);
 
 function adaptarRespuesta(res) {
   res.status = (codigo) => {

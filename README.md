@@ -40,7 +40,8 @@ Informe ──► /diagnostico/:id ──► GET /api/diagnostico ──► vist
 - **Dos prompts.** Uno para conversar y otro para analizar (reglas del filtro de decisión y de la calificación). Cada uno hace mejor su trabajo por separado.
 - **Preguntas abiertas.** El consultor hace una sola pregunta por mensaje, sin opciones ni listas, con ejemplos dentro de la frase, y pide que la persona responda con sus palabras y con el mayor detalle posible.
 - **Solo diagnóstico.** Si un mensaje no tiene que ver con el trabajo de la persona, el consultor le recuerda su función y no responde lo que le piden. El modelo marca esos mensajes y el servidor los cuenta: al tercero cierra la conversación sin diagnóstico (estado `cerrado`), con una despedida fija.
-- **El modelo no hace las cuentas.** Gemini entrega minutos, notas de 1 a 5 y la frecuencia tal como la dijo la persona ("40 al día", "1 por semana"); la conversión a veces por mes, las horas, los cuadrantes y el dinero se calculan en `lib/calculos.js`, así las cifras siempre cuadran.
+- **El modelo no hace las cuentas.** Gemini transcribe la frecuencia y el tiempo tal como los dijo la persona, con su unidad y su alcance ("40 facturas al mes" y "4 días en total" frente a "6 minutos cada una"), y copia su frase textual como respaldo. La conversión a horas (un día = 8 horas), los cuadrantes y el dinero se calculan en `lib/calculos.js`.
+- **Límites de sentido común.** Si una tarea pasa de 176 h al mes por persona (un mes de jornada completa), o la suma de todas lo supera con holgura, la validación se lo devuelve a Gemini con la cuenta concreta para que corrija. El informe muestra la frase de la persona junto a cada tarea, para que cualquier cifra rara se pueda contrastar.
 - **Mínimo de oportunidades.** La validación de coherencia exige al menos 3 oportunidades (o una por tarea si hay menos de 3), cada una sobre una tarea distinta; si no se cumple, se le pide a Gemini que corrija.
 - **El historial vive en el servidor.** El navegador solo envía el mensaje nuevo, así que nadie puede inventar respuestas del consultor ni gastar la key para otros fines.
 - **Salida JSON con respaldo.** Primero se pide JSON con esquema (`responseFormat`). Si la API rechaza ese formato (400), se prueba `responseJsonSchema` y, por último, JSON sin esquema, describiendo el esquema en el prompt. Siempre se valida con Zod.
@@ -62,7 +63,8 @@ Informe ──► /diagnostico/:id ──► GET /api/diagnostico ──► vist
 ├── api/                      # Funciones serverless de Vercel
 │   ├── sesion.js             # POST registro + saludo · GET recuperar conversación
 │   ├── chat.js               # POST mensaje (y cierre → diagnóstico)
-│   └── diagnostico.js        # GET datos del informe
+│   ├── diagnostico.js        # GET datos del informe
+│   └── admin.js              # Panel administrativo (acceso, historial, CSV, conversaciones)
 ├── lib/                      # Lógica del servidor (no se publica)
 │   ├── prompts.js            # Instrucciones de entrevista y de análisis
 │   ├── gemini.js             # Llamadas a Gemini, JSON con esquema, modo simulado
@@ -71,16 +73,19 @@ Informe ──► /diagnostico/:id ──► GET /api/diagnostico ──► vist
 │   ├── servicio.js           # Flujo: iniciar, conversar, cerrar, informe
 │   ├── store.js              # PostgreSQL (o memoria en local)
 │   ├── correo.js             # Correos por SMTP con nodemailer (opcional)
+│   ├── admin.js              # Panel: cookie firmada, filtros, indicadores y CSV
 │   ├── http.js               # Errores uniformes (429, 502, 500)
 │   └── ejemplo.js            # Diagnóstico ficticio (modo simulado y tests)
 ├── src/                      # Frontend publicado
-│   ├── index.html · styles.css · app.js (routing) · chat.js · informe.js
+│   ├── index.html · styles.css · app.js (routing) · chat.js · informe.js · admin.js
 │   ├── dom.js (creación segura de elementos) · utils.js (funciones puras) · theme.js
 │   └── assets/ avatar-consultor.svg · logo-claro.png · logo-oscuro.png
 ├── database/schema.sql       # Tablas sesiones, mensajes, diagnosticos y vista_leads
 ├── database/migracion-*.sql  # Cambios para bases ya creadas (idempotentes)
 ├── scripts/dev-server.js     # Servidor local sin la CLI de Vercel
-├── tests/                    # Vitest: 27 pruebas, sin llamar a Gemini de verdad
+├── scripts/evaluar-analisis.js # Evalúa el análisis con casos reales (usa Gemini)
+├── tests/                    # Vitest: 44 pruebas, sin llamar a Gemini de verdad
+│   └── fixtures/             # Conversaciones reales anonimizadas con el resultado esperado
 └── vercel.json
 ```
 
@@ -128,12 +133,13 @@ Al registrarse, si el SMTP está configurado, la persona recibe un correo con un
 npm test
 ```
 
-34 pruebas en 4 archivos:
+44 pruebas en 5 archivos:
 
 - `utils.test.js`: funciones puras del navegador; el texto de consentimiento es igual en el navegador y en el servidor; el HTML no se interpreta.
 - `calculos.test.js`:
   - horas, dinero, cuadrantes, orden de oportunidades y coherencia;
   - conversión de la frecuencia a veces por mes y mínimo de oportunidades;
+  - tiempo por vez frente a total del periodo (el caso real de "40 facturas en 4 días") y límites de horas por persona;
   - el esquema para Gemini no trae palabras clave no soportadas.
 - `gemini.test.js`, con `fetch` simulado:
   - la key va en el header;
@@ -146,6 +152,16 @@ npm test
   - tres mensajes fuera de tema cierran la conversación sin diagnóstico;
   - errores 400, 405, 409 y 404;
   - el informe no expone el correo.
+- `admin.test.js`: acceso con contraseña, cookie firmada (manipulada o vencida se rechaza), filtros, indicadores, CSV (sin fórmulas inyectadas) y conversación.
+
+### Evaluar el análisis con casos reales
+
+```bash
+npm run eval:analisis
+CORRIDAS=3 GEMINI_MODEL_ANALISIS=gemini-3-flash-preview GEMINI_RAZONAMIENTO_ANALISIS=medium npm run eval:analisis
+```
+
+Corre el análisis con Gemini real (gasta cuota) sobre las conversaciones de `tests/fixtures/` y comprueba que las horas de cada tarea queden en el rango esperado. Agrega un caso nuevo cada vez que encuentres un error en un informe real (anonimízalo antes).
 
 ## Desplegar en Vercel
 
@@ -157,10 +173,21 @@ npm test
 2. **Vercel:** sube el repo a GitHub e impórtalo (Framework Preset: **Other**).
 3. **Variables de entorno:**
    - obligatorias: `GEMINI_API_KEY`, `DATABASE_URL` (la de Neon) y `APP_URL` (el dominio de Vercel, sin `/` final);
-   - opcionales: las de SMTP (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `CORREO_REMITENTE`).
+   - opcionales: las de SMTP (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `CORREO_REMITENTE`);
+   - `ADMIN_PASSWORD` para el panel administrativo (mínimo 8 caracteres; sin ella el panel no se activa).
 4. **Deploy.** El turno que genera el diagnóstico puede tardar 1-2 minutos: `vercel.json` le da 120 s a `api/chat.js`. Revisa que tu plan lo permita.
 
-Los contactos y diagnósticos se ven con `select * from vista_leads;`.
+## Panel administrativo
+
+En `/admin` (no aparece en el menú) el dueño del software ve el historial de personas que hicieron el diagnóstico:
+
+- **Indicadores:** personas, diagnósticos entregados y tasa de finalización, sin terminar (en curso sin actividad en 24 h), cerradas por fuera de tema, horas al mes liberables, ahorro anual estimado y respuestas por conversación;
+- **Diagnósticos por semana** (últimas 12) e **industrias más frecuentes**;
+- **Tabla** con búsqueda, filtro por periodo y estado, y paginación;
+- **Conversación completa** de cada sesión y enlace a su informe;
+- **Descargar CSV** del historial filtrado (separador `;` y coma decimal, para Excel en español).
+
+El acceso usa `ADMIN_PASSWORD` y una cookie firmada `HttpOnly` que dura 8 horas. Los contactos también se ven con `select * from vista_leads;`.
 
 ## Antes de abrirlo al público
 

@@ -1,0 +1,124 @@
+{
+  "descripcion": "Caso real anonimizado (noviembre de 2026): el análisis convirtió '40 facturas al mes en 4 días' en 1.920 h/mes y contó SECOP sin multiplicar por las 4 instituciones.",
+  "costo_hora_esperado": 10000,
+  "esperado": [
+    {
+      "patron": "factur",
+      "horas_min": 20,
+      "horas_max": 40,
+      "nota": "40 facturas al mes en unos 4 días: unas 32 h"
+    },
+    {
+      "patron": "sicom",
+      "horas_min": 4,
+      "horas_max": 12,
+      "nota": "20 minutos diarios: unas 6,7 h"
+    },
+    {
+      "patron": "carrotanque|cami[oó]n|liquidaci",
+      "horas_min": 12,
+      "horas_max": 25,
+      "nota": "día de por medio, hora y media: entre 15 y 22,5 h"
+    },
+    {
+      "patron": "secop",
+      "horas_min": 6,
+      "horas_max": 10,
+      "nota": "4 instituciones, dos horas cada una: unas 8 h"
+    }
+  ],
+  "conversacion": [
+    {
+      "rol": "assistant",
+      "texto": "Hola, Paula. Soy el consultor de Studio-IA. Te haré preguntas una a una para que respondas con tus propias palabras; entre más detalle me des, más preciso será tu diagnóstico. Al final verás qué actividades puedes automatizar con IA, las herramientas recomendadas y el tiempo que podrías ahorrar.\n\nPara empezar, ¿cuál es tu **cargo exacto** y cómo es un día normal en tu trabajo? Por ejemplo, si atiendes clientes, revisas inventarios o coordinas entregas."
+    },
+    {
+      "rol": "user",
+      "texto": "Revisar la cartera del mayorista y notificar para realizar pagos diarios. \nLiquidar y registrar las ventas a clientes a crédito.\nFacturar electrónicamente a los clientes a crédito, verificando previamente cuáles aplican.\nEmitir la factura electrónica de los cinco arrendatarios del local (Por concepto de canon de arrendamiento)\nRevisar el reporte diario de estado de combustible en Print: al llegar en la mañana, al mediodía y al finalizar la tarde.\nHacer pedido de combustible y velar por la liberación del carrotanque para que llegue a tiempo\nLiquidar cada camión a su llegada con guía, factura y relación de información.\nLlevar registro de bitácora de carrotanque a la Estación\nRegistrar los pagos en el archivo de maestro de clientes\nElaborar el reporte de cuadre de caja en Excel; si hay abonos a cuentas por pagar del mayorista, o abonos de los clientes si se pagó al mayorista o se hizo pago de facturas\nConsolidar datos en el tablero maestro de RRHH\nApoyar las tareas de SG-SST\nVelar por el estricto cumplimiento del RIT y realizar los respectivos llamados de atención según la norma, basados en el RIT y la filosofía de la empresa\nGestionar el control y el diseño de los inventarios de aceites y canastilla.\nGestionar semanalmente los pedidos de canastilla \nVelar por el debido cumplimiento normativo\nHacer la declaración de información diaria y mensual en el SICOM (del combustible que ingresa y de los cambios de precios)\nGestionar los debidos procesos de contratación (la alcaldía, la empresa de aseo, la empresa de energía y el instituto de deportes) COn toda la documentación requerida, aplicación de pagos en el SECOP II y los informes técnicos con facturación"
+    },
+    {
+      "rol": "assistant",
+      "texto": "Manejas una gran variedad de procesos, desde la cartera y las facturas electrónicas hasta el SICOM y el SECOP II. ¿Cómo haces el proceso de facturación electrónica y cuánto te toma en total al día? Por ejemplo, si descargas los datos de un sistema, los pasas al portal y verificas uno por uno cuáles clientes aplican."
+    },
+    {
+      "rol": "user",
+      "texto": "hay dos formas de hacerlo: \n1. Contamos con software contable que registra los consumos del mes, verifico los registros que lleva en el tablero maestro de clientes a crédito y genero la factura:\n2. Contamos con otro software que permite facturar lo que el cliente solicite, ejemplo los convenios estatales."
+    },
+    {
+      "rol": "assistant",
+      "texto": "Usar dos sistemas distintos para la **facturación** divide el trabajo entre los consumos mensuales y los convenios. ¿Cuántas facturas generas en promedio al mes y cuánto tiempo te toma completar todo el proceso? Por ejemplo, si abres el software, buscas cada cliente y envías los documentos uno a uno."
+    },
+    {
+      "rol": "user",
+      "texto": "genero 40 facturas al mes, y me toma alrededor de 4 días"
+    },
+    {
+      "rol": "assistant",
+      "texto": "Cuatro días al mes para 40 facturas es casi una semana entera de trabajo acumulado. Pasemos a otra de tus tareas frecuentes, como la **declaración en el SICOM**. ¿Cómo haces ese registro diario y mensual, y cuánto tiempo te toma cada vez? Por ejemplo, si descargas los volúmenes, abres la plataforma oficial y digitas uno a uno los datos."
+    },
+    {
+      "rol": "user",
+      "texto": "Lo hago manual, de acuerdo a la información que arrojó el cuentagalones, la vedeoroot, la guía de envío y la factura electrónica que llega"
+    },
+    {
+      "rol": "assistant",
+      "texto": "Reunir los datos del cuentagalones, el Veeder-Root, las guías y las facturas para pasarlos al SICOM requiere cruzar varias fuentes todos los días. ¿Cuánto tiempo te toma completar ese registro diario y qué parte del proceso te consume más esfuerzo? Por ejemplo, si abres varias ventanas, comparas las cifras a ojo o digitas los números uno por uno en la plataforma."
+    },
+    {
+      "rol": "user",
+      "texto": "20 minutos diarios, llevar los registros en las bitácoras."
+    },
+    {
+      "rol": "assistant",
+      "texto": "Eso suma unas 7 horas al mes solo en el registro del SICOM y las bitácoras. Hablemos de la **liquidación de camiones** a su llegada, que mencionaste antes: ¿cómo haces este proceso, qué documentos comparas y cuánto tiempo te toma cada liquidación? Por ejemplo, si tienes que verificar la guía contra la factura física, hacer cálculos en Excel o si a veces los datos no cuadran y tienes que investigar por qué."
+    },
+    {
+      "rol": "user",
+      "texto": "La guía, bitácoras en excel con formulas ya definidas, solo es colocar los datos"
+    },
+    {
+      "rol": "assistant",
+      "texto": "Ya tienes las fórmulas listas en Excel para registrar los datos de la guía de cada **camión**. ¿Cada cuánto llega un carrotanque y cuánto te toma completar toda su liquidación? \n\nPor ejemplo, si recibes un camión diario, ingresas los volúmenes y te toma media hora revisar que todo coincida."
+    },
+    {
+      "rol": "user",
+      "texto": "Llega día de por medio y demora al rededor de hora y media"
+    },
+    {
+      "rol": "assistant",
+      "texto": "Hora y media cada dos días para liquidar un camión suma unas 20 horas al mes. Pasemos a otro proceso pesado que mencionaste, el **cuadre de caja**. ¿Cómo elaboras ese reporte y qué haces si las cuentas no coinciden? Por ejemplo, si descargas los movimientos bancarios, los cruzas uno a uno en Excel con los recibos o tienes que revisar pagos anteriores."
+    },
+    {
+      "rol": "user",
+      "texto": "Los datos siempre dan"
+    },
+    {
+      "rol": "assistant",
+      "texto": "Qué bueno que los datos del cuadre de caja no te den dolores de cabeza por diferencias. Pasemos a la gestión en el **SECOP II** y los contratos. ¿Cómo haces ese proceso de contratación y pagos, cada cuánto te toca y cuánto te toma? Por ejemplo, si compilas la documentación de varias entidades, redactas los informes o subes los soportes uno a uno a la plataforma."
+    },
+    {
+      "rol": "user",
+      "texto": "Lo hago mensual, por cada institución me toma al rededor de dos horas, cada institución compila la información, yo la subo al SECOP junto con los soportes"
+    },
+    {
+      "rol": "assistant",
+      "texto": "Subir los soportes y la información al SECOP II mes a mes requiere paciencia con la plataforma. Para dimensionar el impacto económico de estas tareas repetitivas, ¿podrías decirme, de forma aproximada y opcional, cuánto cuesta una **hora de trabajo** de tu rol y en qué moneda? \n\nPor ejemplo, unos 20.000 pesos colombianos o 10 dólares la hora."
+    },
+    {
+      "rol": "user",
+      "texto": "La hora de trabajo cuenta 10.000 pesos colombianos"
+    },
+    {
+      "rol": "assistant",
+      "texto": "Con el costo por hora claro y las tareas que revisamos, ya tengo un panorama muy completo. Antes de cerrar, ¿queda alguna otra tarea repetitiva importante, por ejemplo de **fin de mes**, que te quite mucho tiempo y de la que no hayamos hablado? \n\nPor ejemplo, la consolidación de datos para recursos humanos, los reportes de seguridad y salud en el trabajo o la revisión de inventarios."
+    },
+    {
+      "rol": "user",
+      "texto": "No"
+    },
+    {
+      "rol": "assistant",
+      "texto": "Gracias por compartir todos estos detalles sobre tus procesos en la estación de servicio. Ya tengo la información necesaria para preparar tu diagnóstico con las actividades que puedes automatizar, las herramientas recomendadas y el tiempo que podrías ahorrar."
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calcularDiagnostico, cuadrante, validarCoherencia, vecesPorMes } from "../lib/calculos.js";
+import { calcularDiagnostico, calcularTarea, cuadrante, minutosPorVez, validarCoherencia, vecesPorMes } from "../lib/calculos.js";
 import { DiagnosticoSchema, esquemaGemini } from "../lib/esquema.js";
 import { DIAGNOSTICO_EJEMPLO } from "../lib/ejemplo.js";
 
@@ -29,8 +29,41 @@ describe("cálculos del diagnóstico", () => {
   it("detecta incoherencias", () => {
     const malo = structuredClone(DIAGNOSTICO_EJEMPLO);
     malo.oportunidades[0].tarea_id = "T9";
-    malo.tareas[1].minutos_despues = 99;
-    expect(validarCoherencia(malo)).toHaveLength(2);
+    expect(validarCoherencia(malo)).toHaveLength(1);
+  });
+  it("el tiempo dado como total del periodo no se multiplica por las veces (caso real de facturación)", () => {
+    // "genero 40 facturas al mes, y me toma alrededor de 4 días"
+    const t = {
+      frecuencia: { veces: 40, periodo: "mes" },
+      tiempo: { cantidad: 4, unidad: "dias", alcance: "total_del_periodo" },
+      ahorro_porcentaje: 50,
+      personas: 1,
+      calificacion: DIAGNOSTICO_EJEMPLO.tareas[0].calificacion,
+    };
+    expect(minutosPorVez(t)).toBe(48); // 4 jornadas de 8 h = 1.920 min ÷ 40 facturas
+    const r = calcularTarea(t, null);
+    expect(r.horas_mes_actual).toBe(32);
+    expect(r.horas_mes_liberadas).toBe(16);
+    // "por cada institución dos horas", con 4 instituciones al mes
+    const secop = { ...t, frecuencia: { veces: 4, periodo: "mes" }, tiempo: { cantidad: 2, unidad: "horas", alcance: "cada_vez" } };
+    expect(calcularTarea(secop, null).horas_mes_actual).toBe(8);
+  });
+  it("rechaza tareas que superan un mes completo de trabajo por persona", () => {
+    // El error real: 40 facturas × 2.880 minutos cada una = 1.920 h al mes
+    const absurdo = structuredClone(DIAGNOSTICO_EJEMPLO);
+    absurdo.tareas[0].frecuencia = { veces: 40, periodo: "mes" };
+    absurdo.tareas[0].tiempo = { cantidad: 6, unidad: "dias", alcance: "cada_vez" };
+    absurdo.tareas[0].personas = 1;
+    const errores = validarCoherencia(absurdo);
+    expect(errores[0]).toMatch(/^En T1 la cuenta da 1920 h al mes por persona/);
+    expect(errores[0]).toContain("total_del_periodo");
+    expect(errores[1]).toMatch(/Entre todas las tareas suman/);
+  });
+  it("los diagnósticos guardados con el formato anterior se siguen calculando igual", () => {
+    const viejo = { veces_por_mes: 120, minutos_por_vez: 12, minutos_despues: 4, personas: 2, calificacion: DIAGNOSTICO_EJEMPLO.tareas[0].calificacion };
+    const r = calcularTarea(viejo, 25000, 0.6);
+    expect(r.horas_mes_actual).toBe(48);
+    expect(r.horas_mes_liberadas).toBe(32);
   });
   it("convierte la frecuencia a veces por mes en el código", () => {
     const base = { minutos_por_vez: 6, minutos_despues: 2, personas: 1 };

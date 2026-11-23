@@ -357,6 +357,7 @@ th { background: var(--oro-suave); color: var(--texto); text-align: left; paddin
 td { border-bottom: 1px solid var(--linea); padding: 10px 12px; vertical-align: top; background: transparent; color: var(--texto); }
 .col-actividad strong { display: block; }
 .col-actividad .sutil { display: block; margin-top: 2px; }
+.cita { display: block; margin-top: 6px; font-size: 13px; font-style: italic; color: var(--suave); }
 td .sutil { display: inline-block; }
 @media screen and (max-width: 767px) {
   .tabla-act thead { position: absolute; left: -9999px; }
@@ -393,7 +394,7 @@ td .sutil { display: inline-block; }
 .etapa ul { padding-left: 18px; margin: 10px 0 0; }
 
 .cta { display: flex; flex-direction: column; gap: 16px; background: var(--acento-suave); }
-.cta__logo { height: 28px; width: auto; }
+.cta__logo { height: 28px; width: auto; max-width: 160px; align-self: flex-start; object-fit: contain; }
 [data-theme="dark"] .cta__logo { content: url("/assets/logo-claro.png"); }
 .cta h3 { margin-top: 0; }
 
@@ -427,6 +428,90 @@ td .sutil { display: inline-block; }
   .messages { scroll-behavior: auto; }
 }
 
+/* ---------- Panel administrativo (/admin) ---------- */
+:root { --dato: #4f46e5; }                 /* color de las barras (validado contra la superficie clara) */
+[data-theme="dark"] { --dato: #7477f3; }   /* paso propio para el modo oscuro */
+body[data-vista="admin"] .app { max-width: 1240px; }
+.admin { transition: opacity 0.15s; }
+.admin--cargando { opacity: 0.55; }
+.admin-acceso { max-width: 420px; margin: 24px auto; }
+.admin-cabecera { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; justify-content: space-between; margin-bottom: 16px; }
+.admin-cabecera h1 { font-size: clamp(26px, 4vw, 34px); }
+.admin-cabecera__acciones { display: flex; gap: 8px; flex-wrap: wrap; }
+.admin-filtros { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 16px; }
+.admin-filtros .form-select, .admin-filtros .form-control { min-height: 44px; width: auto; background-color: var(--papel); color: var(--texto); border-color: var(--linea); border-radius: 10px; }
+.admin-filtros input[type="search"] { flex: 1 1 260px; }
+.admin-rango { display: flex; gap: 6px; align-items: center; color: var(--suave); }
+.admin-indicadores { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.admin-indicadores .cifra { background: var(--papel); }
+.admin-indicadores .cifra--oro { background: var(--acento-suave); }
+.cifra__etiqueta { display: block; margin-bottom: 6px; font-weight: 500; }
+.admin-graficas { display: grid; gap: 0 16px; }
+.admin-graficas > *, .admin-indicadores > * { min-width: 0; }
+.admin-tarjeta h2 { font-size: 19px; margin-bottom: 2px; }
+
+.grafica { margin-top: 12px; }
+.grafica__area { position: relative; height: 200px; }
+.grafica__ejes { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: space-between; }
+.grafica__linea { position: relative; border-top: 1px solid var(--linea); }
+.grafica__linea span { position: absolute; left: 0; transform: translateY(-50%); background: var(--papel); padding-right: 4px; font-size: 11px; color: var(--suave); font-variant-numeric: tabular-nums; }
+.grafica__cols { position: absolute; inset: 0 0 0 30px; display: flex; align-items: flex-end; gap: 2px; }
+.grafica__col { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; background: none; border: 0; padding: 0; cursor: default; }
+.grafica__barra { display: block; width: 100%; max-width: 24px; background: var(--dato); border-radius: 4px 4px 0 0; }
+.grafica__col:hover .grafica__barra, .grafica__col:focus-visible .grafica__barra { filter: brightness(1.18); }
+.grafica__valor { font-size: 12px; font-weight: 600; color: var(--texto); margin-bottom: 4px; }
+.grafica__tooltip { position: absolute; top: 4px; transform: translateX(-50%); display: grid; gap: 2px; min-width: 150px; padding: 8px 10px; background: var(--papel); border: 1px solid var(--linea); border-radius: 10px; box-shadow: var(--sombra); font-size: 13px; pointer-events: none; z-index: 2; }
+.grafica__tooltip strong { font-size: 15px; }
+.grafica__fechas { display: flex; gap: 2px; margin: 6px 0 0 30px; }
+.grafica__fechas span { flex: 1; min-width: 0; text-align: center; font-size: 11px; color: var(--suave); white-space: nowrap; overflow: hidden; }
+
+.ranking { list-style: none; padding: 0; margin: 14px 0 0; display: grid; gap: 12px; }
+.ranking li { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; font-size: 14px; }
+.ranking__valor { font-weight: 600; font-variant-numeric: tabular-nums; }
+.ranking__pista { grid-column: 1 / -1; height: 8px; background: var(--acento-suave); border-radius: 4px; }
+.ranking__barra { display: block; height: 100%; background: var(--dato); border-radius: 4px; }
+
+.admin-tabla__cabecera { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; justify-content: space-between; margin-bottom: 12px; }
+.admin-tabla__cabecera h2 { font-size: 19px; margin: 0; }
+.tabla-admin { min-width: 1000px; }
+.tabla-admin .col-fecha span { white-space: nowrap; }
+.tabla-admin td > span { display: block; }
+.tabla-admin td.num, .tabla-admin th:nth-child(n+6):nth-child(-n+8) { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.admin-acciones { white-space: nowrap; }
+.admin-acciones .enlace, .admin-acciones a { font-size: 14px; font-weight: 500; min-height: 32px; margin-right: 10px; padding: 0; text-decoration: underline; }
+.estado { display: inline-block !important; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
+.estado--ok { background: #dcfce7; color: #166534; }
+.estado--curso { background: var(--acento-suave); color: var(--acento-texto); }
+.estado--alerta { background: #fef3c7; color: #92400e; }
+.estado--cerrado { background: var(--oro-suave); color: var(--suave); border: 1px solid var(--linea); }
+[data-theme="dark"] .estado--ok { background: #14532d; color: #bbf7d0; }
+[data-theme="dark"] .estado--alerta { background: #78350f; color: #fde68a; }
+.paginacion { display: flex; gap: 12px; align-items: center; justify-content: center; margin-top: 16px; color: var(--suave); }
+
+.dialogo { width: min(760px, calc(100vw - 24px)); max-height: calc(100dvh - 48px); padding: 0; border: 1px solid var(--linea); border-radius: 16px; background: var(--fondo); color: var(--texto); }
+.dialogo::backdrop { background: rgb(0 0 0 / 45%); }
+.dialogo > .cargando, .dialogo > p { padding: 20px; }
+.dialogo__cabecera { position: sticky; top: 0; z-index: 1; display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: flex-start; padding: 16px 20px; background: var(--papel); border-bottom: 1px solid var(--linea); }
+.dialogo__cabecera h2 { font-size: 20px; margin: 0 0 4px; }
+.dialogo__cabecera .sutil { margin: 0; }
+.dialogo__acciones { display: flex; gap: 8px; }
+.dialogo__mensajes { display: flex; flex-direction: column; gap: 14px; padding: 16px 20px 20px; }
+
+@media (max-width: 767px) {
+  .grafica__fechas span:nth-child(even) { visibility: hidden; }
+  /* En móvil cada persona es una tarjeta */
+  .tabla-admin { min-width: 0; }
+  .tabla-admin thead { position: absolute; left: -9999px; }
+  .tabla-admin, .tabla-admin tbody, .tabla-admin tr, .tabla-admin td { display: block; width: 100%; }
+  .tabla-admin tr { border: 1px solid var(--linea); border-radius: 12px; padding: 6px 4px; margin-bottom: 12px; }
+  .tabla-admin td { border: 0; padding: 4px 12px; text-align: left !important; }
+  .tabla-admin td::before { content: attr(data-label); display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--suave); }
+  .tabla-admin .col-actividad::before, .tabla-admin .admin-acciones::before { display: none; }
+}
+@media (min-width: 992px) {
+  .admin-graficas { grid-template-columns: 2fr 1fr; }
+}
+
 /* ---------- Impresión del informe (Descargar PDF) ---------- */
 @media print {
   @page { size: A4; margin: 12mm; }
@@ -445,6 +530,7 @@ td .sutil { display: inline-block; }
   [data-theme="dark"] .ficha__num { color: #fff; }
   .salto { break-before: page; }
   .ficha, .tabla-act tr, .etapa { break-inside: avoid; }
+  .seccion > .kicker, .seccion > h2, .seccion > h2 + p { break-after: avoid; }
   .tabla-scroll { overflow: visible; }
   .cifras { grid-template-columns: repeat(3, 1fr); }
   .mini-cifras { grid-template-columns: repeat(4, 1fr); }

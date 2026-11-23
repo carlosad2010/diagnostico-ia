@@ -1,5 +1,6 @@
 import { chatView, initChat } from "./chat.js";
 import { informeView, initInforme } from "./informe.js";
+import { adminView, initAdmin } from "./admin.js";
 import { initThemeToggle } from "./theme.js";
 import { h } from "./dom.js";
 import { CLAVE_SESION, TEXTO_CONSENTIMIENTO } from "./utils.js";
@@ -134,6 +135,8 @@ const routes = {
   "/inicio": { title: "Diagnóstico de automatización · Studio-IA", view: inicioView, init: initInicio },
   "/chat": { title: "Entrevista · Studio-IA", view: chatView, init: initChat },
   "/como-funciona": { title: "Cómo funciona · Studio-IA", view: comoFuncionaView },
+  // Panel administrativo: no aparece en el menú y pide contraseña
+  "/admin": { title: "Panel administrativo · Studio-IA", view: adminView, init: initAdmin },
 };
 
 function retomarSesion(id) {

@@ -105,7 +105,11 @@ function construir({ persona, datos: d, calculos, creado }) {
     const op = oportunidadDe.get(t.id);
     const herramientas = op?.solucion.herramientas ?? [];
     return h("tr", {},
-      h("td", { "data-label": "Actividad", class: "col-actividad" }, h("strong", { text: t.nombre }), h("span", { class: "sutil", text: t.descripcion })),
+      h("td", { "data-label": "Actividad", class: "col-actividad" },
+        h("strong", { text: t.nombre }),
+        h("span", { class: "sutil", text: t.descripcion }),
+        t.cita ? h("span", { class: "cita", text: `Según nos contaste: «${t.cita}»` }) : null,
+      ),
       h("td", { "data-label": "Tiempo hoy", text: `${horas(t.horas_mes_actual)} al mes` }),
       h("td", { "data-label": "¿Se puede automatizar?" }, h("span", { class: `nivel nivel--${p.clase}`, text: p.nivel }), h("span", { class: "sutil", text: p.nota })),
       h("td", { "data-label": "IA o herramientas que necesita" },

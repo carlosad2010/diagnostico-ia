@@ -6,7 +6,8 @@
     "dev": "node --env-file-if-exists=.env scripts/dev-server.js",
     "dev:simulado": "MOCK_AI=1 node scripts/dev-server.js",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "eval:analisis": "node --env-file-if-exists=.env scripts/evaluar-analisis.js"
   },
   "dependencies": {
     "nodemailer": "^10.6.0",
