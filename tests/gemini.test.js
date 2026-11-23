@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { analizar, conversar, extraerJson, getReplyText, separarCierre, toGeminiContents } from "../lib/gemini.js";
+import { analizar, conversar, extraerJson, getReplyText, reiniciarFormatoAnalisis, separarCierre, toGeminiContents } from "../lib/gemini.js";
 import { DIAGNOSTICO_EJEMPLO } from "../lib/ejemplo.js";
 
 const respuesta = (texto, status = 200) => ({
@@ -44,6 +44,8 @@ describe("llamadas a Gemini (fetch simulado)", () => {
   beforeEach(() => {
     vi.stubEnv("GEMINI_API_KEY", "clave-secreta");
     vi.stubEnv("MOCK_AI", "");
+    vi.stubEnv("GEMINI_ESPERA_REINTENTO_MS", "0");
+    reiniciarFormatoAnalisis();
   });
   afterEach(() => {
     vi.unstubAllEnvs();
@@ -119,5 +121,21 @@ describe("llamadas a Gemini (fetch simulado)", () => {
   it("analizar se rinde tras varios intentos inválidos", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(respuesta("esto no es JSON")));
     await expect(analizar([{ rol: "user", texto: "x" }])).rejects.toThrow("No se pudo generar");
+  });
+
+  it("analizar reintenta cuando Gemini está saturado (503) y recuerda el formato aceptado", async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(respuesta("", 400)) // formato 0 rechazado
+      .mockResolvedValue(respuesta("", 503)); // luego todos los modelos saturados…
+    for (let i = 0; i < 4; i++) fetchMock.mockResolvedValueOnce(respuesta("", 503));
+    fetchMock.mockResolvedValueOnce(respuesta(JSON.stringify(DIAGNOSTICO_EJEMPLO))); // …hasta que responde
+    vi.stubGlobal("fetch", fetchMock);
+    const d = await analizar([{ rol: "user", texto: "x" }]);
+    expect(d.oportunidades).toHaveLength(3);
+    // Un segundo análisis ya no pide el formato rechazado
+    fetchMock.mockResolvedValueOnce(respuesta(JSON.stringify(DIAGNOSTICO_EJEMPLO)));
+    const antes = fetchMock.mock.calls.length;
+    await analizar([{ rol: "user", texto: "y" }]);
+    expect(JSON.parse(fetchMock.mock.calls[antes][1].body).generationConfig.responseJsonSchema).toBeDefined();
   });
 });
