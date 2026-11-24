@@ -6,7 +6,7 @@ Construido sobre la base técnica de **SpiderChat** (Proyecto Integrador M3, Hen
 
 - SPA con HTML, CSS y JavaScript sin frameworks;
 - funciones serverless de Vercel;
-- Google Gemini, con la key solo en el servidor.
+- Google Gemini, con OpenRouter (`openrouter/free`) de respaldo; las keys solo viven en el servidor.
 
 El método del consultor viene de la skill `diagnostico-automatizacion-ia` v2.
 
@@ -172,10 +172,10 @@ Corre el análisis con Gemini real (gasta cuota) sobre las conversaciones de `te
    - si la base ya existía, ejecuta también `database/migracion-01-fuera-de-tema.sql` **antes** de desplegar el código nuevo.
 2. **Vercel:** sube el repo a GitHub e impórtalo (Framework Preset: **Other**).
 3. **Variables de entorno:**
-   - obligatorias: `GEMINI_API_KEY`, `DATABASE_URL` (la de Neon) y `APP_URL` (el dominio de Vercel, sin `/` final);
+   - obligatorias: `GEMINI_API_KEY` (y `OPENROUTER_API_KEY` como respaldo, recomendada), `DATABASE_URL` (la de Neon) y `APP_URL` (el dominio de Vercel, sin `/` final);
    - opcionales: las de SMTP (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `CORREO_REMITENTE`);
    - `ADMIN_PASSWORD` para el panel administrativo (mínimo 8 caracteres; sin ella el panel no se activa).
-4. **Deploy.** El turno que genera el diagnóstico puede tardar 1-2 minutos: `vercel.json` le da 120 s a `api/chat.js`. Revisa que tu plan lo permita.
+4. **Deploy.** El turno que genera el diagnóstico puede tardar 1-3 minutos: `vercel.json` le da 300 s a `api/chat.js`. Revisa que tu plan lo permita.
 
 ## Panel administrativo
 
@@ -190,6 +190,8 @@ En `/admin` (no aparece en el menú) el dueño del software ve el historial de p
 El acceso usa `ADMIN_PASSWORD` y una cookie firmada `HttpOnly` que dura 8 horas. Los contactos también se ven con `select * from vista_leads;`.
 
 ## Antes de abrirlo al público
+
+- **OpenRouter de respaldo.** Si todos los modelos de Gemini fallan (503, 429, 5xx), la entrevista o el análisis siguen por `openrouter/free`, que elige al azar entre los modelos gratuitos de OpenRouter. El límite es de 20 peticiones por minuto y 50 por día (1.000 por día si compras al menos 10 USD en créditos), y las fallidas también cuentan. Un diagnóstico completo usa unas 12 a 16 peticiones, así que sin créditos alcanzan para 3 o 4 diagnósticos al día. Como el modelo cambia en cada llamada, la calidad y la velocidad varían; la validación de cifras y el ciclo de correcciones lo compensan en parte. Algunos modelos gratuitos ignoran el nivel de razonamiento y gastan todos los tokens "pensando" sin responder: por eso el razonamiento va acotado por tokens (600 en la entrevista y 2.000 en el análisis), y si una respuesta llega vacía se pide otra vez.
 
 - **Cuota gratuita de Gemini.** Tiene límites por minuto y por día: con varias personas a la vez aparecerán errores 429.
 - **Uso de datos.** Según los términos de Gemini, Google puede usar los datos del nivel gratuito para mejorar sus productos, y revisores humanos pueden leerlos. Google pide no enviar información sensible o confidencial a ese nivel. Para clientes reales, activa la facturación (nivel de pago) o mantén el aviso del consentimiento.

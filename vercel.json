@@ -1,8 +1,17 @@
 {
   "outputDirectory": "src",
   "functions": {
-    "api/chat.js": { "maxDuration": 120 },
-    "api/sesion.js": { "maxDuration": 60 }
+    "api/chat.js": {
+      "maxDuration": 300
+    },
+    "api/sesion.js": {
+      "maxDuration": 60
+    }
   },
-  "rewrites": [{ "source": "/((?!api/).*)", "destination": "/index.html" }]
+  "rewrites": [
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
+    }
+  ]
 }

@@ -10,13 +10,13 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 delete process.env.MOCK_AI;
-const { analizar, MODELO_ANALISIS, RAZONAMIENTO_ANALISIS } = await import("../lib/gemini.js");
+const { analizar, proveedorIA, RAZONAMIENTO_ANALISIS } = await import("../lib/gemini.js");
 const { calcularDiagnostico, HORAS_MES_PERSONA } = await import("../lib/calculos.js");
 
 const CARPETA = fileURLToPath(new URL("../tests/fixtures", import.meta.url));
 const CORRIDAS = Number(process.env.CORRIDAS ?? 2);
 const casos = readdirSync(CARPETA).filter((f) => f.endsWith(".json"));
-console.log(`Modelo de análisis: ${MODELO_ANALISIS} · razonamiento: ${RAZONAMIENTO_ANALISIS} · ${CORRIDAS} corridas por caso\n`);
+console.log(`Modelo de análisis: ${proveedorIA()} · razonamiento: ${RAZONAMIENTO_ANALISIS} · ${CORRIDAS} corridas por caso\n`);
 
 let fallas = 0;
 for (const archivo of casos) {
